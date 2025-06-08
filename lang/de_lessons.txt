@@ -2,4 +2,6 @@ Basics 1=lang/de_lessons/basics1.csv
 Basics 2=lang/de_lessons/basics2.csv
 About You 1=lang/de_lessons/about_you1.csv
 About You 2=lang/de_lessons/about_you2.csv
+Numbers 1=lang/de_lessons/numbers1.csv
+Numbers 2=lang/de_lessons/numbers2.csv
 Food=lang/de_lessons/food.csv

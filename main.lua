@@ -829,6 +829,12 @@ function StartScreen:new()
     o.languageDropdownVisible = false
     o.languageDropdownButtons = {}
     o.languageSelectionButton = nil
+    o.lessonButtons = {}
+    o.scrollOffset = 0
+    o.scrollAreaY = 0
+    o.scrollAreaHeight = 0
+    o.contentHeight = 0
+    o.maxScrollOffset = 0
     o:load()
     return o
 end
@@ -840,6 +846,7 @@ function StartScreen:load()
     self.elements = {}
     self.languageDropdownButtons = {}
     self.languageDropdownVisible = false
+    self.lessonButtons = {}
 
     if not logoImage then
         local info = love.filesystem.getInfo("logo.png", "file")
@@ -962,16 +969,14 @@ end
 function StartScreen:loadLessons(filename)
     self.lessons = loadLessonsFromTxt(filename)
     
-    local keptElements = {}
-    for _, element in ipairs(self.elements) do
-        if element.text == "Quit" or element == self.languageSelectionButton or element.text == "Reset" or (element.draw == self.elements[1].draw) then
-            table.insert(keptElements, element)
-        end
-    end
-    self.elements = keptElements
+    self.lessonButtons = {} 
 
     local actualLogoHeight = 72
-    local yOffset = self.centerOffsetY + 40 + actualLogoHeight + 20
+    self.scrollAreaY = self.centerOffsetY + 40 + actualLogoHeight + 20
+    self.scrollAreaHeight = screenHeight - self.scrollAreaY - 100
+    self.scrollOffset = 0
+
+    local yOffset = 0
 
     if #self.lessons > 0 then
         for _, lesson in ipairs(self.lessons) do
@@ -990,18 +995,22 @@ function StartScreen:loadLessons(filename)
 
             local button = createButton(
                 self.centerOffsetX + 20,
-                yOffset,
+                self.scrollAreaY + yOffset,
                 360,
                 60,
                 lesson.name,
                 function() self:onLessonSelect(lesson.path, lesson.name) end,
                 buttonColor
             )
-            table.insert(self.elements, button)
+            table.insert(self.lessonButtons, button)
             yOffset = yOffset + 60 + 10
         end
+        self.contentHeight = yOffset
+        self.maxScrollOffset = math.max(0, self.contentHeight - self.scrollAreaHeight)
     else
         print("Warning: No lessons found in '" .. filename .. "'. No lesson buttons created.")
+        self.contentHeight = 0
+        self.maxScrollOffset = 0
     end
 end
 
@@ -1031,7 +1040,28 @@ function StartScreen:mousepressed(x, y, button)
         end
     end
 
+    local clickedInScrollArea = x >= self.centerOffsetX + 20 and x <= self.centerOffsetX + 20 + 360 and 
+                                y >= self.scrollAreaY and y <= self.scrollAreaY + self.scrollAreaHeight
+
+    if clickedInScrollArea then
+        for _, btn in ipairs(self.lessonButtons) do
+            local adjustedBtnY = btn.y - self.scrollOffset
+            if x >= btn.x and x <= btn.x + btn.width and
+               y >= adjustedBtnY and y <= adjustedBtnY + btn.height and btn.enabled then
+                btn.callback(btn)
+                return
+            end
+        end
+    end
+
     Screen.mousepressed(self, x, y, button)
+end
+
+function StartScreen:wheelmoved(x, y)
+    if self.contentHeight > self.scrollAreaHeight then
+        self.scrollOffset = self.scrollOffset - (y * 20)
+        self.scrollOffset = math.max(0, math.min(self.scrollOffset, self.maxScrollOffset))
+    end
 end
 
 function StartScreen:update(dt)
@@ -1050,10 +1080,34 @@ function StartScreen:update(dt)
             end
         end
     end
+
+    local hoveredInScrollArea = mx >= self.centerOffsetX + 20 and mx <= self.centerOffsetX + 20 + 360 and 
+                                my >= self.scrollAreaY and my <= self.scrollAreaY + self.scrollAreaHeight
+
+    for _, btn in ipairs(self.lessonButtons) do
+        local adjustedBtnY = btn.y - self.scrollOffset
+        btn.isHovered = (hoveredInScrollArea and mx >= btn.x and mx <= btn.x + btn.width and
+                         my >= adjustedBtnY and my <= adjustedBtnY + btn.height and btn.enabled)
+    end
 end
 
 function StartScreen:draw()
-    Screen.draw(self)
+    for _, element in ipairs(self.elements) do
+        if element.draw then
+            element.draw(element)
+        end
+    end
+
+    love.graphics.setScissor(self.centerOffsetX + 20, self.scrollAreaY, 360, self.scrollAreaHeight)
+
+    for _, btn in ipairs(self.lessonButtons) do
+        local originalY = btn.y
+        btn.y = originalY - self.scrollOffset
+        btn.draw(btn)
+        btn.y = originalY
+    end
+
+    love.graphics.setScissor()
 
     if self.languageDropdownVisible then
         love.graphics.setColor(1, 1, 1, 1)
@@ -1112,6 +1166,12 @@ end
 function love.keypressed(key)
     if currentScreen and currentScreen.keypressed then
         currentScreen:keypressed(key)
+    end
+end
+
+function love.wheelmoved(x, y)
+    if currentScreen and currentScreen.wheelmoved then
+        currentScreen:wheelmoved(x, y)
     end
 end
 
