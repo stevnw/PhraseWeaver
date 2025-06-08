@@ -38,3 +38,12 @@ Change language with the drop down in the top right
 It saves your progress and marks lessons with a score - this determines the boxes colour on the main menu -> hit reset in the bottom to clear this but it saves in:
 
 <pre>~/.local/share/love$</pre>
+
+
+Audio is generated using gTTS python library - there is a script in /res/ which I used to generate the audio. You may need to change some of the code - these bits have comments next to them. To run this code
+
+<pre>python gen.py basics1.csv</pre>
+
+Just replace basics1.csv with whatever your csv is 
+
+This will make the audio and update the csv to include audio paths - automating that task because it is quite long.
