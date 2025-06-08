@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/2332854e-ed93-4cd3-82bd-8436bbecc0d8)
+
+
 # PhraseWeaver
 Love2D language learning game, translate sentences using a bank of words.
 
