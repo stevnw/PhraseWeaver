@@ -1,0 +1,5 @@
+Basics 1=lessons/basics1.csv
+Basics 2=lessons/basics2.csv
+About You 1=lessons/about_you1.csv
+About You 2=lessons/about_you2.csv
+Food=lessons/food.csv
