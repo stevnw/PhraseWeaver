@@ -7,13 +7,15 @@ local font_h2 = love.graphics.newFont(24)
 local font_button = love.graphics.newFont(16)
 local font_normal = love.graphics.newFont(14)
 
+local font_foreign_main = love.graphics.newFont("res/Noto_Sans_JP/static/NotoSansJP-Regular.ttf", 28)
+local font_foreign_reading = love.graphics.newFont("res/Noto_Sans_JP/static/NotoSansJP-Regular.ttf", 18)
+
 local logoImage = nil
 
--- Score-based colors
-local SCORE_COLOR_GOOD = {0.6, 0.9, 0.6, 1.0} -- Green
-local SCORE_COLOR_OKAY = {0.98, 0.8, 0.5, 1.0} -- Amber
-local SCORE_COLOR_BAD = {1.0, 0.6, 0.6, 1.0}  -- Red
-local SCORE_COLOR_DEFAULT = {0.6, 0.7, 1.0, 1.0} -- Original
+local SCORE_COLOR_GOOD = {0.6, 0.9, 0.6, 1.0}
+local SCORE_COLOR_OKAY = {0.98, 0.8, 0.5, 1.0}
+local SCORE_COLOR_BAD = {1.0, 0.6, 0.6, 1.0}
+local SCORE_COLOR_DEFAULT = {0.6, 0.7, 1.0, 1.0}
 
 string.trim = function(s)
     s = s:gsub("^%s*(.-)%s*$", "%1")
@@ -34,16 +36,16 @@ function createButton(x, y, width, height, text, callback, initialColor)
             local currentColor = self.color
             if self.isHovered and self.enabled then
                 if currentColor[1] == SCORE_COLOR_GOOD[1] and currentColor[2] == SCORE_COLOR_GOOD[2] then
-                     love.graphics.setColor(0.7, 1.0, 0.7, 1.0) -- Green
+                     love.graphics.setColor(0.7, 1.0, 0.7, 1.0)
                 elseif currentColor[1] == SCORE_COLOR_OKAY[1] and currentColor[2] == SCORE_COLOR_OKAY[2] then
-                    love.graphics.setColor(1.0, 0.9, 0.6, 1.0) -- Amber
+                    love.graphics.setColor(1.0, 0.9, 0.6, 1.0)
                 elseif currentColor[1] == SCORE_COLOR_BAD[1] and currentColor[2] == SCORE_COLOR_BAD[2] then
-                    love.graphics.setColor(1.0, 0.7, 0.7, 1.0) -- Red
-                else -- Default or unknown color?
-                    love.graphics.setColor(0.8, 0.9, 1.0, 1.0) -- Original
+                    love.graphics.setColor(1.0, 0.7, 0.7, 1.0)
+                else
+                    love.graphics.setColor(0.8, 0.9, 1.0, 1.0)
                 end
             elseif not self.enabled then
-                love.graphics.setColor(0.4, 0.4, 0.6, 0.7) -- Disabled appearance
+                love.graphics.setColor(0.4, 0.4, 0.6, 0.7)
             else
                 love.graphics.setColor(currentColor)
             end
@@ -66,6 +68,7 @@ function parseCSV(filename)
     local sentences = {}
     local fileContent = love.filesystem.read(filename)
     if not fileContent then
+        print("Error: CSV file not found or could not be read: '" .. filename .. "'")
         return {}
     end
 
@@ -86,10 +89,11 @@ function parseCSV(filename)
                 audio = parts[4]:trim()
             })
         else
-        
+            print("Warning: Skipping malformed line in '" .. filename .. "' at line " .. line_count .. ": '" .. line .. "'")
         end
     end
     if #sentences == 0 then
+        print("Warning: No sentences found in CSV file: '" .. filename .. "'")
     end
     return sentences
 end
@@ -97,6 +101,7 @@ end
 function loadLessonsFromTxt(filename)
     local fileContent = love.filesystem.read(filename)
     if not fileContent then
+        print("Error: Lesson list file not found or could not be read: '" .. filename .. "'")
         return {}
     end
 
@@ -108,57 +113,86 @@ function loadLessonsFromTxt(filename)
         if key and value then
             table.insert(lessons_data, {name = key:trim(), path = value:trim()})
         else
-
+            print("Warning: Skipping malformed line in '" .. filename .. "' at line " .. line_count .. ": '" .. line .. "'. Expected format 'Name=Path'.")
         end
+    end
+    if #lessons_data == 0 then
+        print("Warning: No lessons found in lesson list file: '" .. filename .. "'")
     end
     return lessons_data
 end
 
-local userSavePathBase = nil
+function loadLanguagesFromTxt(filename)
+    local fileContent = love.filesystem.read(filename)
+    if not fileContent then
+        print("Error: Language list file not found or could not be read: '" .. filename .. "'")
+        return {}
+    end
+
+    local languages_data = {}
+    local line_count = 0
+    for line in fileContent:gmatch("(.-)\n") do
+        line_count = line_count + 1
+        local key, value = line:match("([^=]+)=(.*)")
+        if key and value then
+            table.insert(languages_data, {name = key:trim(), path = value:trim()})
+        else
+            print("Warning: Skipping malformed line in '" .. filename .. "' at line " .. line_count .. ": '" .. line .. "'. Expected format 'Name=Path'.")
+        end
+    end
+    if #languages_data == 0 then
+        print("Warning: No languages found in language list file: '" .. filename .. "'")
+    end
+    return languages_data
+end
+
+
+local customUserDataPath = nil
 
 function ensureUserDirectory()
-    local userDir = "user"
-    local cmd = string.format("mkdir -p %q", userDir)
-    os.execute(cmd)
+    local success = love.filesystem.createDirectory(customUserDataPath)
+    if not success then
+        local info = love.filesystem.getInfo(customUserDataPath, "directory")
+        if not info then
+            print("Error: User data directory " .. customUserDataPath .. " does not exist and could not be created. Saving may fail.")
+        end
+    end
 end
 
 function loadUserScores()
-    ensureUserDirectory()
     local scores = {}
-    local scoreFile = "user/scores.txt"
+    local scoreFilePath = customUserDataPath .. "/scores.txt"
     
-    local file = io.open(scoreFile, "r")
-    if file then
-        for line in file:lines() do
+    local fileContent = love.filesystem.read(scoreFilePath)
+    if fileContent then
+        for line in fileContent:gmatch("(.-)\n") do
             local lessonName, score = line:match("([^:]+):(%d+)")
             if lessonName and score then
                 scores[lessonName:trim()] = tonumber(score)
+            else
+                print("Warning: Malformed score line in '" .. scoreFilePath .. "': '" .. line .. "'")
             end
         end
-        file:close()
-    else
-
     end
     return scores
 end
 
 function saveUserScore(lessonName, score)
-    ensureUserDirectory()
     local currentScores = loadUserScores()
-    local scoreFile = "user/scores.txt"
+    local scoreFilePath = customUserDataPath .. "/scores.txt"
 
     if not currentScores[lessonName] or score > currentScores[lessonName] then
         currentScores[lessonName] = score
     end
 
-    local file = io.open(scoreFile, "w")
-    if file then
-        for name, s in pairs(currentScores) do
-            file:write(name..":"..s.."\n")
-        end
-        file:close()
-    else
-
+    local fileContent = ""
+    for name, s in pairs(currentScores) do
+        fileContent = fileContent .. name .. ":" .. s .. "\n"
+    end
+    
+    local success = love.filesystem.write(scoreFilePath, fileContent)
+    if not success then
+        print("Error: Could not save user scores to '" .. scoreFilePath .. "'")
     end
 end
 
@@ -192,32 +226,49 @@ function Screen:draw()
 end
 
 function Screen:mousepressed(x, y, button)
-    for _, element in pairs(self.elements) do
-        if element.hitTest and element.callback then
-            if element.hitTest(element, x, y) then
-                element.callback(element)
+    if self.isCompletionPopupVisible then
+        if self.popupContinueButton and self.popupContinueButton.hitTest and self.popupContinueButton.callback then
+            if self.popupContinueButton.hitTest(self.popupContinueButton, x, y) then
+                self.popupContinueButton.callback(self.popupContinueButton)
                 return
+            end
+        end
+    elseif self.isStatusBannerVisible then
+        if self.nextButton and self.nextButton.hitTest and self.nextButton.callback then
+            if self.nextButton.hitTest(self.nextButton, x, y) then
+                self.nextButton.callback(self.nextButton)
+                return
+            end
+        end
+    else
+        if not self.returningToStart then
+            if type(self.translationWordButtons) == "table" then
+                for _, element in ipairs(self.translationWordButtons) do
+                    if element.hitTest and element.callback and element.enabled then
+                        if element.hitTest(element, x, y) then
+                            element.callback(element)
+                            return
+                        end
+                    end
+                end
+            end
+            if type(self.elements) == "table" then
+                for _, element in ipairs(self.elements) do
+                    if element.hitTest and element.callback and element.enabled then
+                        if element.hitTest(element, x, y) then
+                            element.callback(element)
+                            return
+                        elseif element.draw then
+                        end
+                    end
+                end
             end
         end
     end
 end
 
-function Screen:mousereleased(x, y, button)
 
-end
-
-function Screen:keypressed(key)
-
-end
-
-function Screen:resize(w, h)
-    screenWidth = w
-    screenHeight = h
-    self.centerOffsetX = (screenWidth - 800) / 2
-    self.centerOffsetY = (screenHeight - 600) / 2
-end
-
-local TranslationGame = Screen:new()
+local TranslationGame = {}
 TranslationGame.__index = TranslationGame
 
 function TranslationGame:new(csv_filename, start_screen_ref, lesson_name)
@@ -261,6 +312,7 @@ function TranslationGame:load()
     if sentenceCount > 0 then
         self:loadSentence()
     else
+        print("No sentences found in lesson: '" .. self.csv_filename .. "'. Returning to Start Screen.")
         self.returningToStart = true
         self.returnToStartTimer = 2
     end
@@ -325,21 +377,26 @@ function TranslationGame:loadSentence()
     end
     self.elements = keptElements
 
-
     local langLabelX = self.centerOffsetX + 30
     local langLabelY = self.centerOffsetY + 30
     local langLabelWidth = 800 - 60
-    local langLabelHeight = font_h2:getHeight()
+    
+    local mainPhraseHeight = font_foreign_main:getHeight()
+    local readingHeight = font_foreign_reading:getHeight()
 
     local function drawLanguageLabel()
         love.graphics.setColor(0.2, 0.2, 0.2, 1.0)
-        love.graphics.setFont(font_h2)
+        
+        love.graphics.setFont(font_foreign_main)
         love.graphics.printf(self.current_sentence.german, langLabelX, langLabelY, langLabelWidth, "center")
+
+        love.graphics.setFont(font_foreign_reading)
+        love.graphics.printf(self.current_sentence.literal, langLabelX, langLabelY + mainPhraseHeight + 10, langLabelWidth, "center")
     end
     table.insert(self.elements, {draw = drawLanguageLabel})
 
+    local transAreaY = langLabelY + mainPhraseHeight + 10 + readingHeight + 30
     local transAreaX = self.centerOffsetX + 50
-    local transAreaY = self.centerOffsetY + 30 + font_h2:getHeight() + 30
     local transAreaWidth = 800 - 100
     local transAreaHeight = 120
     local function drawTranslationArea()
@@ -351,7 +408,7 @@ function TranslationGame:loadSentence()
     table.insert(self.elements, {draw = drawTranslationArea})
 
     local wordBankX = self.centerOffsetX + 20
-    local wordBankY = self.centerOffsetY + 30 + font_h2:getHeight() + 30 + 120 + 30
+    local wordBankY = transAreaY + transAreaHeight + 30
     local wordBankWidth = 800 - 40
     local wordBankHeight = 200
 
@@ -477,7 +534,9 @@ end
 
 function TranslationGame:repositionTranslationWords()
     local transAreaX = self.centerOffsetX + 50
-    local transAreaY = self.centerOffsetY + 30 + font_h2:getHeight() + 30
+    local mainPhraseHeight = font_foreign_main:getHeight()
+    local readingHeight = font_foreign_reading:getHeight()
+    local transAreaY = self.centerOffsetY + 30 + mainPhraseHeight + 10 + readingHeight + 30
     local horizontalPadding = 8
     local verticalPadding = 8
     local buttonWidth = 120
@@ -551,15 +610,17 @@ end
 
 function TranslationGame:playGermanAudio()
     if not self.current_sentence or not self.current_sentence.audio then
+        print("Error: No audio path for current sentence.")
         return
     end
 
     local audio_file = self.current_sentence.audio
-    if love.filesystem.getInfo(audio_file, "file") then
+    local info = love.filesystem.getInfo(audio_file, "file")
+    if info then
         local source = love.audio.newSource(audio_file, "static")
         source:play()
     else
-
+        print("Error: Audio file not found: '" .. audio_file .. "'")
     end
 end
 
@@ -660,12 +721,12 @@ function TranslationGame:mousepressed(x, y, button)
                     end
                 end
             end
-
             for _, element in ipairs(self.elements) do
                 if element.hitTest and element.callback and element.enabled then
                     if element.hitTest(element, x, y) then
                         element.callback(element)
                         return
+                    elseif element.draw then
                     end
                 end
             end
@@ -763,6 +824,11 @@ function StartScreen:new()
     setmetatable(o, self)
     o.lessons = {}
     o.userScores = {}
+    o.languages = {}
+    o.currentLanguage = nil
+    o.languageDropdownVisible = false
+    o.languageDropdownButtons = {}
+    o.languageSelectionButton = nil
     o:load()
     return o
 end
@@ -772,11 +838,15 @@ function StartScreen:load()
     self.centerOffsetY = (screenHeight - 500) / 2
 
     self.elements = {}
+    self.languageDropdownButtons = {}
+    self.languageDropdownVisible = false
 
     if not logoImage then
-        if love.filesystem.getInfo("logo.png", "file") then
+        local info = love.filesystem.getInfo("logo.png", "file")
+        if info then
             logoImage = love.graphics.newImage("logo.png")
         else
+            print("Warning: logo.png not found at root. Using text fallback. Tried: 'logo.png'")
         end
     end
 
@@ -792,7 +862,7 @@ function StartScreen:load()
         else
             love.graphics.setColor(0.2, 0.2, 0.2, 1.0)
             love.graphics.setFont(font_h1)
-            love.graphics.printf("PhraseWeaver", self.centerOffsetX, self.centerOffsetY + 40, 400, "center") -- What a shit name hahaha
+            love.graphics.printf("PhraseWeaver", self.centerOffsetX, self.centerOffsetY + 40, 400, "center")
         end
     end
     table.insert(self.elements, {draw = drawLogo})
@@ -807,41 +877,131 @@ function StartScreen:load()
     )
     table.insert(self.elements, quitButton)
 
+    local resetButton = createButton(
+        20,
+        screenHeight - 20 - 40,
+        150,
+        40,
+        "Reset",
+        function() self:onResetProgress() end
+    )
+    table.insert(self.elements, resetButton)
+
     self.userScores = loadUserScores()
-    self:loadLessons("lessons.txt")
+    self:loadLanguages("languages.txt")
+end
+
+function StartScreen:loadLanguages(filename)
+    self.languages = loadLanguagesFromTxt(filename)
+
+    if #self.languages > 0 then
+        if not self.currentLanguage then
+            self.currentLanguage = self.languages[1]
+        end
+    else
+        print("Error: No languages loaded from '" .. filename .. "'. Cannot proceed. Check file content and path.")
+        return
+    end
+
+    self.languageSelectionButton = createButton(
+        screenWidth - 150,
+        20,
+        130,
+        40,
+        self.currentLanguage and self.currentLanguage.name or "Select Language",
+        function() self:toggleLanguageDropdown() end
+    )
+    table.insert(self.elements, self.languageSelectionButton)
+
+    self:loadLessons(self.currentLanguage.path)
+end
+
+function StartScreen:toggleLanguageDropdown()
+    self.languageDropdownVisible = not self.languageDropdownVisible
+    self.languageDropdownButtons = {}
+
+    if self.languageDropdownVisible then
+        local dropdownX = self.languageSelectionButton.x
+        local dropdownY = self.languageSelectionButton.y + self.languageSelectionButton.height + 5
+        local dropdownWidth = self.languageSelectionButton.width
+        local buttonHeight = 40
+        local verticalSpacing = 2
+
+        for i, lang_data in ipairs(self.languages) do
+            local btn = createButton(
+                dropdownX,
+                dropdownY + (i - 1) * (buttonHeight + verticalSpacing),
+                dropdownWidth,
+                buttonHeight,
+                lang_data.name,
+                function() self:onLanguageSelect(lang_data) end
+            )
+            table.insert(self.languageDropdownButtons, btn)
+        end
+    end
+end
+
+function StartScreen:onLanguageSelect(selected_language_data)
+    self.currentLanguage = selected_language_data
+    self.languageSelectionButton.text = selected_language_data.name
+    self.languageDropdownVisible = false
+    self:loadLessons(self.currentLanguage.path)
+end
+
+function StartScreen:onResetProgress()
+    local scoreFilePath = customUserDataPath .. "/scores.txt"
+    local success, err = love.filesystem.remove(scoreFilePath)
+    if success then
+        self.userScores = {}
+        self:loadLessons(self.currentLanguage.path)
+    else
+        print("Error: Could not remove user scores file: '" .. scoreFilePath .. "'. Error: " .. tostring(err))
+    end
 end
 
 function StartScreen:loadLessons(filename)
     self.lessons = loadLessonsFromTxt(filename)
     
+    local keptElements = {}
+    for _, element in ipairs(self.elements) do
+        if element.text == "Quit" or element == self.languageSelectionButton or element.text == "Reset" or (element.draw == self.elements[1].draw) then
+            table.insert(keptElements, element)
+        end
+    end
+    self.elements = keptElements
+
     local actualLogoHeight = 72
     local yOffset = self.centerOffsetY + 40 + actualLogoHeight + 20
 
-    for _, lesson in ipairs(self.lessons) do
-        local lessonScore = self.userScores[lesson.name]
-        local buttonColor = SCORE_COLOR_DEFAULT
+    if #self.lessons > 0 then
+        for _, lesson in ipairs(self.lessons) do
+            local lessonScore = self.userScores[lesson.name]
+            local buttonColor = SCORE_COLOR_DEFAULT
 
-        if lessonScore then
-            if lessonScore >= 75 then
-                buttonColor = SCORE_COLOR_GOOD
-            elseif lessonScore >= 50 then
-                buttonColor = SCORE_COLOR_OKAY
-            else
-                buttonColor = SCORE_COLOR_BAD
+            if lessonScore then
+                if lessonScore >= 75 then
+                    buttonColor = SCORE_COLOR_GOOD
+                elseif lessonScore >= 50 then
+                    buttonColor = SCORE_COLOR_OKAY
+                else
+                    buttonColor = SCORE_COLOR_BAD
+                end
             end
-        end
 
-        local button = createButton(
-            self.centerOffsetX + 20,
-            yOffset,
-            360,
-            60,
-            lesson.name,
-            function() self:onLessonSelect(lesson.path, lesson.name) end,
-            buttonColor
-        )
-        table.insert(self.elements, button)
-        yOffset = yOffset + 60 + 10
+            local button = createButton(
+                self.centerOffsetX + 20,
+                yOffset,
+                360,
+                60,
+                lesson.name,
+                function() self:onLessonSelect(lesson.path, lesson.name) end,
+                buttonColor
+            )
+            table.insert(self.elements, button)
+            yOffset = yOffset + 60 + 10
+        end
+    else
+        print("Warning: No lessons found in '" .. filename .. "'. No lesson buttons created.")
     end
 end
 
@@ -850,14 +1010,76 @@ function StartScreen:onLessonSelect(csvPath, lessonName)
     currentScreen = TranslationGame:new(csvPath, self, lessonName)
 end
 
+function StartScreen:mousepressed(x, y, button)
+    if self.languageDropdownVisible then
+        for _, element in ipairs(self.languageDropdownButtons) do
+            if element.hitTest and element.callback then
+                if element.hitTest(element, x, y) then
+                    element.callback(element)
+                    return
+                end
+            end
+        end
+        if not (self.languageSelectionButton and self.languageSelectionButton.hitTest(self.languageSelectionButton, x, y)) then
+            local dropdownX = self.languageSelectionButton.x
+            local dropdownY = self.languageSelectionButton.y + self.languageSelectionButton.height + 5
+            local dropdownWidth = self.languageSelectionButton.width
+            local dropdownHeight = #self.languages * (40 + 2)
+            if not (x >= dropdownX and x <= dropdownX + dropdownWidth and y >= dropdownY and y <= dropdownY + dropdownHeight) then
+                self.languageDropdownVisible = false
+            end
+        end
+    end
+
+    Screen.mousepressed(self, x, y, button)
+end
+
+function StartScreen:update(dt)
+    Screen.update(self, dt)
+
+    local mx, my = love.mouse.getPosition()
+
+    if self.languageSelectionButton then
+        self.languageSelectionButton.isHovered = self.languageSelectionButton.hitTest(self.languageSelectionButton, mx, my)
+    end
+
+    if self.languageDropdownVisible then
+        for _, element in ipairs(self.languageDropdownButtons) do
+            if element.hitTest and element.enabled then
+                element.isHovered = element.hitTest(element, mx, my)
+            end
+        end
+    end
+end
+
+function StartScreen:draw()
+    Screen.draw(self)
+
+    if self.languageDropdownVisible then
+        love.graphics.setColor(1, 1, 1, 1)
+        local dropdownHeight = #self.languages * (40 + 2)
+        love.graphics.rectangle("fill", self.languageSelectionButton.x, self.languageSelectionButton.y + self.languageSelectionButton.height + 5,
+                                self.languageSelectionButton.width, dropdownHeight)
+        love.graphics.setColor(0.1, 0.1, 0.4, 1.0)
+        love.graphics.rectangle("line", self.languageSelectionButton.x, self.languageSelectionButton.y + self.languageSelectionButton.height + 5,
+                                self.languageSelectionButton.width, dropdownHeight)
+
+        for _, btn in ipairs(self.languageDropdownButtons) do
+            btn.draw(btn)
+        end
+    end
+end
+
+
 function love.load()
     love.window.setMode(1920, 1080, { fullscreen = true, resizable = true })
     screenWidth = love.graphics.getWidth()
     screenHeight = love.graphics.getHeight()
 
-    userSavePathBase = love.filesystem.getSaveDirectory() .. "/"
+    customUserDataPath = love.filesystem.getWorkingDirectory() .. "/user"
     
     ensureUserDirectory()
+
     currentScreen = StartScreen:new()
 end
 

@@ -1,0 +1,3 @@
+Basics=lang/es_lessons/basics.csv
+About You=lang/es_lessons/about_you.csv
+Food=lang/es_lessons/food.csv
