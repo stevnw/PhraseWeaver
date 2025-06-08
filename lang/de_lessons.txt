@@ -4,4 +4,6 @@ About You 1=lang/de_lessons/about_you1.csv
 About You 2=lang/de_lessons/about_you2.csv
 Numbers 1=lang/de_lessons/numbers1.csv
 Numbers 2=lang/de_lessons/numbers2.csv
+Family & Friends 1=lang/de_lessons/family_and_friends1.csv
+Family & Friends 2=lang/de_lessons/family_and_friends2.csv
 Food=lang/de_lessons/food.csv
