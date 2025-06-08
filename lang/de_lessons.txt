@@ -6,4 +6,7 @@ Numbers 1=lang/de_lessons/numbers1.csv
 Numbers 2=lang/de_lessons/numbers2.csv
 Family & Friends 1=lang/de_lessons/family_and_friends1.csv
 Family & Friends 2=lang/de_lessons/family_and_friends2.csv
+General Wellbeing 1=lang/de_lessons/wellbeing1.csv
+General Wellbeing 2=lang/de_lessons/wellbeing2.csv
+Work 1=lang/de_lessons/work1.csv
 Food=lang/de_lessons/food.csv
