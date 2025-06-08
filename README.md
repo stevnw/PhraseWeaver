@@ -35,6 +35,6 @@ You need the folder names, or it will not be able to find them
 
 Change language with the drop down in the top right
 
-It saves your progress and makes lessons with a score - this determines the boxes colour -> hit reset in the bottom to clear this but it saves in:
+It saves your progress and marks lessons with a score - this determines the boxes colour on the main menu -> hit reset in the bottom to clear this but it saves in:
 
 <pre>~/.local/share/love$</pre>
