@@ -1,5 +1,6 @@
 ### To do
 - [ ] Add completion dates & times to user saves - this will then allow me to add a review button which will make it easier to review content
+- [ ] I think the way in which saves work currently does not seem to work on windows (works on linux though - have not got the means to test on mac)
 - [ ] I think I should hide the reset button behind a menu of sorts - also add a confirmation to it...
 - [ ] I want to add a streak counter in the bottom right possibly? I think some people won't like streaks so I think it should be something that is toggleable...
 - [ ] I want to add a dark mode at some point.
