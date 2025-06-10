@@ -1,3 +1,12 @@
+### To do
+- [ ] Add completion dates & times to user saves - this will then allow me to add a review button which will make it asier to review content
+- [ ] I think I should hide the reset button behind a menu of sorts - also add a confirmation to it...
+- [ ] I want to add a streak counter in the bottom right possibly? I think some people won't like streaks so I think it should be something that is toggleable...
+- [ ] I want to add a dark mode at some point.
+- [ ] I think I should split the script up into smaller scripts possibly? The single one is kinda long now and its getting hard to find functions lol
+
+
+
 ![image](https://github.com/user-attachments/assets/2332854e-ed93-4cd3-82bd-8436bbecc0d8)
 
 
