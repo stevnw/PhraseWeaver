@@ -1,0 +1,5 @@
+Work phrases=lang/de_lessons/work1.csv
+Jobs 1=lang/de_lessons/work2.csv
+Jobs 2=lang/de_lessons/work3.csv
+Jobs 3=lang/de_lessons/work4.csv
+Work sites=lang/de_lessons/work5.csv

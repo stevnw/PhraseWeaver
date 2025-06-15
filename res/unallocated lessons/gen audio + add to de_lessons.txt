@@ -1,0 +1,21 @@
+NOTE: I AM CHANGING THE RESOURCE I AM USING TO OBTAIN DATA FROM - ITS QUITE BLOATED WITH NICHE THINGS.
+
+
+These are various lessons I have made but I don't see a logical place for and need additional testing...
+Ignore for now lol
+Some of these are really really really niche - so I dont see much point in doing them unless the person is realllllllly into cycling or whatever... 
+Should I include them ??????????? Probably not. Won't gen audio for them unless I see an immediate need for them.
+
+
+-- These ones are on the nicher side, but I should include... I just need to figure out where to put them later --
+Transportation 1=lang/de_lessons/transport1.csv
+Driving 1=lang/de_lessons/driving1.csv
+Driving 2=lang/de_lessons/driving2.csv
+Car Trouble=lang/de_lessons/cartrouble1.csv
+Bus=lang/de_lessons/bus1.csv	<- Haven't generated Audio for...
+
+
+-- Too niche --
+Bicycle 1=lang/de_lessons/bike1.csv	<- Haven't generated Audio for...
+Bicycle 2=lang/de_lessons/bike2.csv	<- Haven't generated Audio for...
+For my personal reference: I got upto Bicycle before moving to a different topic... 
