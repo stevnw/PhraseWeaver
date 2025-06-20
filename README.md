@@ -1,10 +1,7 @@
 ### To do
-- [x] Add completion dates & times to user saves - this will then allow me to add a review button which will make it easier to review content
+- [ ] Story mode type of thing - or like back and forth sentences with questions???
 - [ ] I think the way in which saves work currently does not seem to work on windows (works on linux though - have not got the means to test on mac)
-- [x] I think I should hide the reset button behind a menu of sorts - also add a confirmation to it...
-- [x] I want to add a streak counter in the bottom right possibly? I think some people won't like streaks so I think it should be something that is toggleable...
 - [ ] I want to add a dark mode at some point.
-- [x] I think I should split the script up into smaller scripts possibly? The single one is kinda long now and its getting hard to find functions lol
 
 
 
