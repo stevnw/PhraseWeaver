@@ -21,5 +21,3 @@ Common Adjectives 1=lang/de_lessons/adjectives1.csv
 Common Adjectives 2=lang/de_lessons/adjectives2.csv
 Common Verbs 1=lang/de_lessons/verbs1.csv
 Common Verbs 2=lang/de_lessons/verbs2.csv
-
-

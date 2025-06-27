@@ -69,6 +69,8 @@ function TranslationGame:new(csv_filename, start_screen_ref, lesson_name)
     o.statusBannerColor = {0,0,0,1}
     o.nextButton = nil
 
+    o.germanPhraseClickableArea = nil
+
     o:load()
     return o
 end
@@ -156,16 +158,27 @@ function TranslationGame:loadSentence()
     local mainPhraseHeight = font_foreign_main:getHeight()
     local readingHeight = font_foreign_reading:getHeight()
 
-    local function drawLanguageLabel()
-        love.graphics.setColor(0.2, 0.2, 0.2, 1.0)
-        
-        love.graphics.setFont(font_foreign_main)
-        love.graphics.printf(self.current_sentence.german, langLabelX, langLabelY, langLabelWidth, "center")
+    self.germanPhraseClickableArea = {
+        x = langLabelX,
+        y = langLabelY,
+        width = langLabelWidth,
+        height = mainPhraseHeight,
+        enabled = true,
+        hitTest = function(element, x, y)
+            return x >= element.x and x <= element.x + element.width and
+                   y >= element.y and y <= element.y + element.height
+        end,
+        callback = function() self:playGermanAudio() end,
+        draw = function()
+            love.graphics.setColor(0.2, 0.2, 0.2, 1.0)
+            love.graphics.setFont(font_foreign_main)
+            love.graphics.printf(self.current_sentence.german, langLabelX, langLabelY, langLabelWidth, "center")
 
-        love.graphics.setFont(font_foreign_reading)
-        love.graphics.printf(self.current_sentence.literal, langLabelX, langLabelY + mainPhraseHeight + 10, langLabelWidth, "center")
-    end
-    table.insert(self.elements, {draw = drawLanguageLabel})
+            love.graphics.setFont(font_foreign_reading)
+            love.graphics.printf(self.current_sentence.literal, langLabelX, langLabelY + mainPhraseHeight + 10, langLabelWidth, "center")
+        end
+    }
+    table.insert(self.elements, self.germanPhraseClickableArea)
 
     local transAreaY = langLabelY + mainPhraseHeight + 10 + readingHeight + 30
     local transAreaX = self.centerOffsetX + 50
@@ -485,6 +498,12 @@ function TranslationGame:mousepressed(x, y, button)
         end
     else
         if not self.returningToStart then
+            if self.germanPhraseClickableArea and self.germanPhraseClickableArea.hitTest and self.germanPhraseClickableArea.callback and self.germanPhraseClickableArea.enabled then
+                if self.germanPhraseClickableArea.hitTest(self.germanPhraseClickableArea, x, y) then
+                    self.germanPhraseClickableArea.callback(self.germanPhraseClickableArea)
+                    return
+                end
+            end
             for _, element in ipairs(self.translationWordButtons) do
                 if element.hitTest and element.callback and element.enabled then
                     if element.hitTest(element, x, y) then
@@ -511,6 +530,10 @@ function TranslationGame:update(dt)
             if element.hitTest and element.enabled then
                 element.isHovered = element.hitTest(element, mx, my)
             end
+        end
+
+        if self.germanPhraseClickableArea and self.germanPhraseClickableArea.hitTest and self.germanPhraseClickableArea.enabled then
+            self.germanPhraseClickableArea.isHovered = self.germanPhraseClickableArea.hitTest(self.germanPhraseClickableArea, mx, my)
         end
 
         if self.isStatusBannerVisible and self.nextButton then
@@ -1181,10 +1204,9 @@ function StartScreen:draw()
     love.graphics.setScissor()
 
     if self.userPrefs.showStreak then
-        local streak = getCurrentStreak()
         love.graphics.setColor(0.2, 0.2, 0.2, 1.0)
         love.graphics.setFont(font_normal)
-        love.graphics.printf("Current Streak: " .. streak, 20, screenHeight - 40, 200, "left")
+        love.graphics.printf("Current Streak: " .. getCurrentStreak(), 20, screenHeight - 40, 200, "left")
     end
 
     if self.languageDropdownVisible then
