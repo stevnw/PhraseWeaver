@@ -114,9 +114,20 @@ function loadLessonsFromTxt(filename)
         line_count = line_count + 1
         local key, value = line:match("([^=]+)=(.*)")
         if key and value then
-            table.insert(lessons_data, {name = key:trim(), path = value:trim()})
+            local path, mode = value:match("([^,]+),?([RO]?)")
+            path = path:trim()
+            mode = mode:trim()
+            if mode == "" then
+                mode = "R"
+            end
+            
+            table.insert(lessons_data, {
+                name = key:trim(), 
+                path = path,
+                mode = mode
+            })
         else
-            print("Warning: Skipping malformed line in '" .. filename .. "' at line " .. line_count .. ": '" .. line .. "'. Expected format 'Name=Path'.")
+            print("Warning: Skipping malformed line in '" .. filename .. "' at line " .. line_count .. ": '" .. line .. "'. Expected format 'Name=Path,R' or 'Name=Path,O'.")
         end
     end
     if #lessons_data == 0 then

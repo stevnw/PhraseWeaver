@@ -43,11 +43,12 @@ end
 TranslationGame = {}
 TranslationGame.__index = TranslationGame
 
-function TranslationGame:new(csv_filename, start_screen_ref, lesson_name)
+function TranslationGame:new(csv_filename, start_screen_ref, lesson_name, lesson_mode)
     local o = Screen:new()
     setmetatable(o, self)
     o.start_screen_ref = start_screen_ref
     o.lesson_name = lesson_name
+    o.lesson_mode = lesson_mode or "R"
     o.sentences = {}
     o.all_english_words = {}
     o.shuffled_indices = {}
@@ -120,9 +121,11 @@ function TranslationGame:loadData(filename)
         table.insert(self.all_english_words, word)
     end
 
-    for i = #self.shuffled_indices, 2, -1 do
-        local j = math.random(i)
-        self.shuffled_indices[i], self.shuffled_indices[j] = self.shuffled_indices[j], self.shuffled_indices[i]
+    if self.lesson_mode == "R" then
+        for i = #self.shuffled_indices, 2, -1 do
+            local j = math.random(i)
+            self.shuffled_indices[i], self.shuffled_indices[j] = self.shuffled_indices[j], self.shuffled_indices[i]
+        end
     end
 end
 
@@ -896,7 +899,7 @@ function StartScreen:loadLessons(filename)
     self.scrollAreaY = self.centerOffsetY + 40 + actualLogoHeight + 20
     self.scrollAreaHeight = screenHeight - self.scrollAreaY - 100
     self.scrollOffset = 0
-
+	
 	-- I might make it so the review button changes colour to indicate no more reviews, or reviews are due - I am too lazy to do this right this second, job for future me...
     local reviewButton = createButton(
         self.centerOffsetX + 20,
@@ -933,7 +936,7 @@ function StartScreen:loadLessons(filename)
                 360,
                 60,
                 lesson.name,
-                function() self:onLessonSelect(lesson.path, lesson.name) end,
+                function() self:onLessonSelect(lesson.path, lesson.name, lesson.mode) end,
                 buttonColor
             )
             table.insert(self.lessonButtons, button)
@@ -973,7 +976,7 @@ function StartScreen:onReviewSelect()
         
         for _, lesson in ipairs(self.lessons) do
             if lesson.name == oldestLesson.name then
-                self:onLessonSelect(lesson.path, lesson.name)
+                self:onLessonSelect(lesson.path, lesson.name, lesson.mode)
                 return
             end
         end
@@ -1017,9 +1020,9 @@ function StartScreen:showNoReviewsPopup()
     table.insert(self.noReviewsPopupElements, closeButton)
 end
 
-function StartScreen:onLessonSelect(csvPath, lessonName)
+function StartScreen:onLessonSelect(csvPath, lessonName, lessonMode)
     love.audio.stop()
-    currentScreen = TranslationGame:new(csvPath, self, lessonName)
+    currentScreen = TranslationGame:new(csvPath, self, lessonName, lessonMode)
 end
 
 function StartScreen:mousepressed(x, y, button)

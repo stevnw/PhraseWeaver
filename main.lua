@@ -27,6 +27,11 @@ require("utils")
 require("screens")
 
 function love.load()
+    math.randomseed(os.time())
+    math.random()
+    math.random()
+    math.random()
+    
     love.window.setMode(1920, 1080, { fullscreen = true, resizable = true })
     screenWidth = love.graphics.getWidth()
     screenHeight = love.graphics.getHeight()
