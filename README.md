@@ -1,6 +1,6 @@
 ### To do
 - [ ] I think the way in which saves work currently does not seem to work on windows (works on linux though - have not got the means to test on mac)
-- [ ] Some kind of story or multi speaker dialogue mode?
+- [ ] Some kind of story or multi speaker dialogue mode? -> for now I have gone with an ordered/random mode - I feel like this might do the job? Sequential convos...
 - [ ] I want to add a dark mode at some point.
 
 
