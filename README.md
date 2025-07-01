@@ -16,7 +16,7 @@ Love2D language learning game, translate sentences using a bank of words.
 
 
 ### Note
-- Currently I am working on German stuff, then I will do the Chinese dataset
+- Currently I am taking a break...
 - Other language packs will be put here: https://github.com/stevnw/PhraseWeaver-Language-Packs/
 
 
