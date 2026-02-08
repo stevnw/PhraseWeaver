@@ -1,0 +1,1 @@
+Lesson 1=lang/placeholder_lessons/basics1.tsv,O

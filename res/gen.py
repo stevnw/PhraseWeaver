@@ -23,7 +23,7 @@ def generate_french_audio():
         sys.exit(1)
 
     tsv_file_path = sys.argv[1]
-    base_output_folder = "lang/fr_lessons/audio"
+    base_output_folder = "lang/placeholder_lessons/audio" # change placeholder to language i.e. fr_lessons
 
     if not os.path.exists(base_output_folder):
         os.makedirs(base_output_folder)

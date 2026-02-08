@@ -1,1 +1,1 @@
-French=lang/fr_lessons.txt
+Placeholder=lang/placeholder_lessons.txt
