@@ -1,3 +1,0 @@
-Basics=lang/jp_lessons/basics.csv
-About You=lang/jp_lessons/about_you.csv
-Food=lang/jp_lessons/food.csv

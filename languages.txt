@@ -1,3 +1,1 @@
-German=lang/de_lessons.txt
-Spanish=lang/es_lessons.txt 
-Japanese=lang/jp_lessons.txt 
+French=lang/fr_lessons.txt
