@@ -16,7 +16,7 @@ Love2D language learning game, translate sentences using a bank of words.
 
 
 ### Note
-- Currently I am taking a break...
+- Currently I am ~~taking a break~~ BACK!!!!
 - Other language packs will be put here: https://github.com/stevnw/PhraseWeaver-Language-Packs/
 
 
