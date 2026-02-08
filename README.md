@@ -1,4 +1,5 @@
 ### To do
+- [ ] Rewrite this README properly, its very work in progress...
 - [ ] I think the way in which saves work currently does not seem to work on windows (works on linux though - have not got the means to test on mac)
 - [ ] Some kind of story or multi speaker dialogue mode? -> for now I have gone with an ordered/random mode - I feel like this might do the job? Sequential convos...
 - [ ] I want to add a dark mode at some point.
@@ -29,9 +30,17 @@ Essentially just add a line like this to languages.text - the first one on this 
 Then you need to have a text file named whatever you have set in the languages.txt - this will be where you put the lessons i.e. fr_lessons.txt
 
 <pre>
-  Basics=lang/jp_lessons/basics.tsv
-  About You=lang/jp_lessons/about_you.tsv
-  Food=lang/jp_lessons/food.tsv
+  Basics=lang/fr_lessons/basics.tsv
+  About You=lang/fr_lessons/about_you.tsv
+  Food=lang/fr_lessons/food.tsv
+</pre>
+
+You can either put it in Ordered or Random mode using R and O, Random is the assumed default so;
+
+<pre>
+  Basics=lang/fr_lessons/basics.tsv	# Random as assumed default
+  About You=lang/fr_lessons/about_you.tsv,R # Random, lessons contents will be random
+  Food=lang/fr_lessons/food.tsv,O # Ordered, lessons contents will be in the orderer of the .tsv
 </pre>
 
 Then these call the tsvs located in fr_lessons, these tsvs are in the format of:
@@ -58,10 +67,10 @@ It saves your progress and marks lessons with a score - this determines the boxe
 <pre>~/.local/share/love$</pre>
 
 
-Audio is generated using gTTS python library - there is a script in /res/ which I used to generate the audio. You may need to change some of the code - these bits have comments next to them. To run this code from the PhraseWeaver dir
+Audio is generated using gTTS python library - there is a script in /res/ which I used to generate the audio. You may need to change some of the code - these bits have comments next to them. To run this code from the PhraseWeaver directory;
 
 <pre>python res/gen.py lang/fr_lessons/basics1.tsv</pre>
 
-Just replace basics1.tsv with whatever your tsv is 
+Just replace basics1.tsv with whatever your tsv is. 
 
-This will make the audio and update the tsv to include audio paths - automating that task because it is quite long.
+This will generate the audio and update the tsv to include audio paths.
