@@ -1,5 +1,5 @@
 """
-	Better script for generating audio - to run from main dir: python res/gen.py <lang/fr_lessons/{tsv_name_here}.tsv>
+	Better script for generating audio - to run from main dir PhraseWeaver: python res/gen.py lang/fr_lessons/{tsv_name_here}.tsv
 		i.e. python res/gen.py lang/fr_lessons/basics1.tsv
 				will export the audio to lang/fr_lessons/audio by default
 	Change to suit your needs :)
@@ -7,8 +7,7 @@
 				- made by stevnw
 	
 	gen.py	changes:		
-	I added conditions for ones where there is a slash in the words - so like gendered differences might be like masc/fem and you want both readings in the same one perhaps so this names the 
-	file a valid thing really...
+	Changed to tsv...
 				
 """
 
