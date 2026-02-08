@@ -1,1 +1,1 @@
-Basics 1=lang/fr_lessons/basics1.csv
+Basics 1 - How are you?=lang/fr_lessons/basics1.tsv

@@ -1,7 +1,7 @@
 """
-	Better script for generating audio - to run: python gen.py <csvnamehere.csv>
-		i.e. python gen.py basics1.csv
-				will export the audio to lang/de_lessons/audio by default
+	Better script for generating audio - to run from main dir: python res/gen.py <lang/fr_lessons/{tsv_name_here}.tsv>
+		i.e. python res/gen.py lang/fr_lessons/basics1.tsv
+				will export the audio to lang/fr_lessons/audio by default
 	Change to suit your needs :)
 	
 				- made by stevnw
@@ -18,95 +18,52 @@ import re
 import sys
 from gtts import gTTS
 
-def generate_german_audio():
+def generate_french_audio():
     if len(sys.argv) < 2:
-        print("Usage: python your_script_name.py <csv_file_path>") 
+        print("Usage: python gen.py <tsv_file_path>") 
         sys.exit(1)
 
-    csv_file_path = sys.argv[1]
-    
-    base_output_folder = "lang/de_lessons/audio" # Change de to the right path for your use case lol
+    tsv_file_path = sys.argv[1]
+    base_output_folder = "lang/fr_lessons/audio"
 
     if not os.path.exists(base_output_folder):
         os.makedirs(base_output_folder)
-        print(f"Created folder: {base_output_folder}")
 
     updated_rows = []
 
     try:
-        with open(csv_file_path, 'r', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                updated_rows.append(row)
+        with open(tsv_file_path, 'r', encoding='utf-8') as file:
+            reader = csv.reader(file, delimiter='\t')
+            updated_rows = list(reader)
 
         for i, row in enumerate(updated_rows):
-            if not row:
+            if not row or not row[0]:
                 continue
 
-            german_text = row[0]
-            audio_file_paths_for_csv = [] 
-
-            if '/' in german_text:
-                parts = german_text.split('/')
-                sanitized_parts_for_filename = []
-                for part in parts:
-                    clean_part = part.strip()
-                    sanitized_part = re.sub(r'[^\w\s-]', '', clean_part).strip()
-                    sanitized_part = re.sub(r'\s+', '_', sanitized_part)
-                    sanitized_parts_for_filename.append(sanitized_part.lower())
-                
-                combined_sanitized_filename = "-".join(sanitized_parts_for_filename)
-                if not combined_sanitized_filename:
-                    combined_sanitized_filename = f"audio_row_{i+1}_combined"
-                
-                audio_file_name = f"{combined_sanitized_filename}.mp3"
-                audio_file_path = os.path.join(base_output_folder, audio_file_name)
-                audio_relative_path = os.path.join(base_output_folder, audio_file_name).replace(os.sep, '/')
-                
-                audio_file_paths_for_csv.append(audio_relative_path)
-
-                try:
-                    print(f"Generating combined audio for: '{german_text}'")
-                    tts = gTTS(text=german_text, lang='de', slow=False)
-                    tts.save(audio_file_path)
-                    print(f"Saved: {audio_file_path}")
-                except Exception as e:
-                    print(f"Error generating combined audio for '{german_text}': {e}")
-            else:
-                sanitized_filename = re.sub(r'[^\w\s-]', '', german_text).strip()
-                sanitized_filename = re.sub(r'\s+', '_', sanitized_filename)
-                sanitized_filename = sanitized_filename[:50].lower()
-
-                if not sanitized_filename:
-                    sanitized_filename = f"audio_row_{i+1}"
-
-                audio_file_name = f"{sanitized_filename}.mp3"
-                audio_file_path = os.path.join(base_output_folder, audio_file_name)
-                
-                audio_relative_path = os.path.join(base_output_folder, audio_file_name).replace(os.sep, '/')
-                audio_file_paths_for_csv.append(audio_relative_path)
-
-                try:
-                    print(f"Generating audio for: '{german_text}'")
-                    tts = gTTS(text=german_text, lang='de', slow=False) # Change the de to the right language code, i.e. es = spanish, ja = japanese, zh = Chinese etc
-                    tts.save(audio_file_path)
-                    print(f"Saved: {audio_file_path}")
-                except Exception as e:
-                    print(f"Error generating audio for '{german_text}': {e}")
+            french_text = row[0]
+            sanitized_filename = re.sub(r'[^\w\s-]', '', french_text).strip()
+            sanitized_filename = re.sub(r'\s+', '_', sanitized_filename).lower()[:50] or f"audio_row_{i+1}"
             
-            while len(row) < 4:
-                row.append('')
-            updated_rows[i][3] = ", ".join(audio_file_paths_for_csv)
+            audio_file_path = os.path.join(base_output_folder, f"{sanitized_filename}.mp3")
+            
+            try:
+                print(f"Generating French audio for: '{french_text}'")
+                tts = gTTS(text=french_text, lang='fr', slow=False)
+                tts.save(audio_file_path)
+                
+                while len(row) < 4:
+                    row.append('')
+                row[3] = audio_file_path.replace(os.sep, '/')
+            except Exception as e:
+                print(f"Error for '{french_text}': {e}")
 
-        with open(csv_file_path, 'w', encoding='utf-8', newline='') as file:
-            writer = csv.writer(file)
+        with open(tsv_file_path, 'w', encoding='utf-8', newline='') as file:
+            writer = csv.writer(file, delimiter='\t')
             writer.writerows(updated_rows)
-        print(f"CSV file '{csv_file_path}' updated successfully with audio paths.")
+        print(f"TSV '{tsv_file_path}' updated successfully.")
 
     except FileNotFoundError:
-        print(f"Error: The file '{csv_file_path}' was not found.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"Error: File '{tsv_file_path}' not found.")
 
 if __name__ == "__main__":
-    generate_german_audio()
+    generate_french_audio()

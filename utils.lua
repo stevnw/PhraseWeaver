@@ -67,6 +67,7 @@ function createButton(x, y, width, height, text, callback, initialColor, imagePa
     }
 end
 
+--[[ Keep for now, swapping to TSVs, as sentences use commas, and gramattically would be better with commas...
 function parseCSV(filename)
     local sentences = {}
     local fileContent = love.filesystem.read(filename)
@@ -97,6 +98,46 @@ function parseCSV(filename)
     end
     if #sentences == 0 then
         print("Warning: No sentences found in CSV file: '" .. filename .. "'")
+    end
+    return sentences
+end
+]]--
+
+function parseCSV(filename)
+    local sentences = {}
+    local fileContent = love.filesystem.read(filename)
+    if not fileContent then
+        print("Error: TSV file not found or could not be read: '" .. filename .. "'")
+        return {}
+    end
+
+    local line_count = 0
+    for line in fileContent:gmatch("(.-)\n") do
+        line_count = line_count + 1
+        local parts = {}
+        
+        for part in line:gmatch("([^\t]*)\t") do
+            table.insert(parts, part)
+        end
+        
+        local lastPart = line:match(".*\t(.*)$")
+        if lastPart then
+            table.insert(parts, lastPart)
+        end
+
+        if #parts >= 4 then
+            table.insert(sentences, {
+                german = parts[1]:trim(),
+                english = parts[2]:trim(),
+                literal = parts[3]:trim(),
+                audio = parts[4]:trim()
+            })
+        else
+            print("Warning: Skipping malformed line in '" .. filename .. "' at line " .. line_count .. ": '" .. line .. "'")
+        end
+    end
+    if #sentences == 0 then
+        print("Warning: No sentences found in TSV file: '" .. filename .. "'")
     end
     return sentences
 end
